@@ -102,6 +102,7 @@ public class TypeAliasRegistry {
 
   @SuppressWarnings("unchecked")
   // throws class cast exception as well if types cannot be assigned
+  // 进行类加载，如果在别名里面没找到，就进行类加载
   public <T> Class<T> resolveAlias(String string) {
     try {
       if (string == null) {
@@ -127,12 +128,17 @@ public class TypeAliasRegistry {
 
   public void registerAliases(String packageName, Class<?> superType) {
     ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<>();
+    // 寻找父类是object的类。也就是全部java bean，底层虽然是VFS，但是是直接扫描本地
     resolverUtil.find(new ResolverUtil.IsA(superType), packageName);
     Set<Class<? extends Class<?>>> typeSet = resolverUtil.getClasses();
     for (Class<?> type : typeSet) {
-      // Ignore inner classes and interfaces (including package-info.java)
+      // Ignore inner classes and interfaces (including package-info.java)  忽略内部类和接口（包括package-info.java）
       // Skip also inner classes. See issue #6
+      // type.isAnonymousClass()  类名是否为空  也就是匿名类
+      // type.isInterface()  是否是接口
+      // type.isMemberClass()  成员类，  内部类
       if (!type.isAnonymousClass() && !type.isInterface() && !type.isMemberClass()) {
+        // 注册别名
         registerAlias(type);
       }
     }
@@ -140,6 +146,7 @@ public class TypeAliasRegistry {
 
   public void registerAlias(Class<?> type) {
     String alias = type.getSimpleName();
+    // 如果含有 Alias 注解
     Alias aliasAnnotation = type.getAnnotation(Alias.class);
     if (aliasAnnotation != null) {
       alias = aliasAnnotation.value();
@@ -151,8 +158,9 @@ public class TypeAliasRegistry {
     if (alias == null) {
       throw new TypeException("The parameter alias cannot be null");
     }
-    // issue #748
+    // issue #748  转小写。   类型别是就是全小写的。不是首字母小写。不知道Spring怎么搞得，期待
     String key = alias.toLowerCase(Locale.ENGLISH);
+    // 判断是否是否重名，所以在不指定别名时，如果两个同名类不同包，那么也会也会抛出异常。
     if (typeAliases.containsKey(key) && typeAliases.get(key) != null && !typeAliases.get(key).equals(value)) {
       throw new TypeException("The alias '" + alias + "' is already mapped to the value '" + typeAliases.get(key).getName() + "'.");
     }

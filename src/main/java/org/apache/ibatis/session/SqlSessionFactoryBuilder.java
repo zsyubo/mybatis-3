@@ -72,9 +72,12 @@ public class SqlSessionFactoryBuilder {
     return build(inputStream, null, properties);
   }
 
+  // xml最终都会调用这个方法构建
   public SqlSessionFactory build(InputStream inputStream, String environment, Properties properties) {
     try {
+      // 读取Xml
       XMLConfigBuilder parser = new XMLConfigBuilder(inputStream, environment, properties);
+      // 解析xml  并构建SqlSessionFactory
       return build(parser.parse());
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error building SqlSession.", e);

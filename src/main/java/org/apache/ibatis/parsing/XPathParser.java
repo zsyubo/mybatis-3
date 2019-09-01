@@ -45,9 +45,12 @@ import org.xml.sax.SAXParseException;
  */
 public class XPathParser {
 
+  // Document对象,也就是加载的xml对象
   private final Document document;
+  // 是否开启验证
   private boolean validation;
   private EntityResolver entityResolver;
+  // 自定义属性值。
   private Properties variables;
   private XPath xpath;
 
@@ -122,7 +125,9 @@ public class XPathParser {
   }
 
   public XPathParser(InputStream inputStream, boolean validation, Properties variables, EntityResolver entityResolver) {
+    // 参数构造器方法封装，对参数配置进行初始化
     commonConstructor(validation, variables, entityResolver);
+    // 真正加载xml的实现。
     this.document = createDocument(new InputSource(inputStream));
   }
 
@@ -207,6 +212,7 @@ public class XPathParser {
   }
 
   public XNode evalNode(String expression) {
+    //
     return evalNode(document, expression);
   }
 
@@ -255,6 +261,7 @@ public class XPathParser {
         public void warning(SAXParseException exception) throws SAXException {
         }
       });
+      // 解析
       return builder.parse(inputSource);
     } catch (Exception e) {
       throw new BuilderException("Error creating document instance.  Cause: " + e, e);

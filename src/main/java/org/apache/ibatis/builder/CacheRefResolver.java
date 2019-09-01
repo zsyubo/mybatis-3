@@ -30,6 +30,7 @@ public class CacheRefResolver {
   }
 
   public Cache resolveCacheRef() {
+    // 这而是返回被引用命名空间的cache
     return assistant.useCacheRef(cacheRefNamespace);
   }
 }

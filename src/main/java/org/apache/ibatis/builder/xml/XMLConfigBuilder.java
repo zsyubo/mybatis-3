@@ -91,10 +91,13 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   public Configuration parse() {
+    // 防止二次加载？
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
     parsed = true;
+    // /configuration 为xml配置的 根节点。
+    // parseConfiguration 加载自己所需的配置
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
@@ -102,19 +105,37 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
+      // 自定义配置属性  这些属性都是可外部配置且可动态替换的，既可以在典型的 Java 属性文件中配置，亦可通过 properties 元素的子元素来传递。
       propertiesElement(root.evalNode("properties"));
+      //这是 MyBatis 中极为重要的调整设置，它们会改变 MyBatis 的运行时行为。 下表描述了设置中各项的意图、默认值等。
       Properties settings = settingsAsProperties(root.evalNode("settings"));
+      // vfsImpl ？？ 不太清楚撒玩意      VFS含义是虚拟文件系统；主要是通过程序能够方便读取本地文件系统、FTP文件系统等系统中的文件资源。
+      // 自定义VFS实现，VFS是Mybatis 虚拟的一层文件系统，不用在意底层，可以拓展支持其他实现支持资源访问。
       loadCustomVfs(settings);
+      // 	指定 MyBatis 所用日志的具体实现，未指定时将自动查找。
       loadCustomLogImpl(settings);
+      // 类型别名是为 Java 类型设置一个短的名字。 它只和 XML 配置有关，存在的意义仅在于用来减少类完全限定名的冗余。
       typeAliasesElement(root.evalNode("typeAliases"));
+      // 插件。MyBatis 允许你在已映射语句执行过程中的某一点进行拦截调用。
       pluginElement(root.evalNode("plugins"));
+//      对象工厂（objectFactory）
+//      MyBatis 每次创建结果对象的新实例时，它都会使用一个对象工厂（ObjectFactory）实例来完成。
+//      默认的对象工厂需要做的仅仅是实例化目标类，要么通过默认构造方法，要么在参数映射存在的时候通过参数构造方法来实例化。
+//      如果想覆盖对象工厂的默认行为，则可以通过创建自己的对象工厂来实现。
       objectFactoryElement(root.evalNode("objectFactory"));
+      // 这参数官方文档没介绍啊
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
+      // 这个参数也是
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
+      //  根据读取的  参数  进行初始化。
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
+      // 环境配置
       environmentsElement(root.evalNode("environments"));
+  // 数据库厂商标识,如果官方不支持的数据库 通过这个来自己拓展？？？？
+      // todo  待考证
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+      // 类型处理器（typeHandlers）
       typeHandlerElement(root.evalNode("typeHandlers"));
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
@@ -128,8 +149,10 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
     Properties props = context.getChildrenAsProperties();
     // Check that all settings are known to the configuration class
+    // 通过反射去过去set方法。
     MetaClass metaConfig = MetaClass.forClass(Configuration.class, localReflectorFactory);
     for (Object key : props.keySet()) {
+      // 检查是否存在这个属性值。
       if (!metaConfig.hasSetter(String.valueOf(key))) {
         throw new BuilderException("The setting " + key + " is not known.  Make sure you spelled it correctly (case sensitive).");
       }
@@ -152,6 +175,7 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   private void loadCustomLogImpl(Properties props) {
+    // log的配置属性在 Configuration完成的初始化。
     Class<? extends Log> logImpl = resolveClass(props.getProperty("logImpl"));
     configuration.setLogImpl(logImpl);
   }
@@ -159,8 +183,11 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void typeAliasesElement(XNode parent) {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
+        // 指定一个包名，MyBatis 会在包名下面搜索需要的 Java Bean    <package name="domain.blog"/>
+        // 估计也不会改吧，，直接写死了
         if ("package".equals(child.getName())) {
           String typeAliasPackage = child.getStringAttribute("name");
+          //  注册别名
           configuration.getTypeAliasRegistry().registerAliases(typeAliasPackage);
         } else {
           String alias = child.getStringAttribute("alias");
@@ -184,17 +211,26 @@ public class XMLConfigBuilder extends BaseBuilder {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
         String interceptor = child.getStringAttribute("interceptor");
+        // 读取标签下的参数
         Properties properties = child.getChildrenAsProperties();
+        // Interceptor 插件需要实现的接口
         Interceptor interceptorInstance = (Interceptor) resolveClass(interceptor).newInstance();
+        // 传入参数
         interceptorInstance.setProperties(properties);
         configuration.addInterceptor(interceptorInstance);
       }
     }
   }
 
+  /**
+   * 和 上面的插件初始化过程差不多。
+   * @param context
+   * @throws Exception
+   */
   private void objectFactoryElement(XNode context) throws Exception {
     if (context != null) {
       String type = context.getStringAttribute("type");
+      // 获取参数
       Properties properties = context.getChildrenAsProperties();
       ObjectFactory factory = (ObjectFactory) resolveClass(type).newInstance();
       factory.setProperties(properties);
@@ -220,22 +256,29 @@ public class XMLConfigBuilder extends BaseBuilder {
 
   private void propertiesElement(XNode context) throws Exception {
     if (context != null) {
+      // Properties 底层是hashTable，，。。。线程安全。。
       Properties defaults = context.getChildrenAsProperties();
       String resource = context.getStringAttribute("resource");
       String url = context.getStringAttribute("url");
+      // 这两个属性都是加载其他配置属性，意义一样。
       if (resource != null && url != null) {
         throw new BuilderException("The properties element cannot specify both a URL and a resource based property file reference.  Please specify one or the other.");
       }
+      // 加载配置文件
       if (resource != null) {
         defaults.putAll(Resources.getResourceAsProperties(resource));
       } else if (url != null) {
+        // 根据URl加载配置文件
         defaults.putAll(Resources.getUrlAsProperties(url));
       }
+      //  xml加载的话，configuration 是builder初始化时传入的参数。
       Properties vars = configuration.getVariables();
       if (vars != null) {
+        // 合并
         defaults.putAll(vars);
       }
       parser.setVariables(defaults);
+      //
       configuration.setVariables(defaults);
     }
   }
@@ -269,16 +312,30 @@ public class XMLConfigBuilder extends BaseBuilder {
     configuration.setConfigurationFactory(resolveClass(props.getProperty("configurationFactory")));
   }
 
+  /**
+   * 环境配置（environments）
+   * MyBatis 可以配置成适应多种环境，这种机制有助于将 SQL 映射应用于多种数据库之中， 现实情况下有多种理由需要这么做。
+   * 例如，开发、测试和生产环境需要有不同的配置；或者想在具有相同 Schema 的多个生产数据库中 使用相同的 SQL 映射。
+   * 有许多类似的使用场景。
+   * 不过要记住：尽管可以配置多个环境，但每个 SqlSessionFactory 实例只能选择一种环境。
+   * @param context
+   * @throws Exception
+   */
   private void environmentsElement(XNode context) throws Exception {
     if (context != null) {
+      //  第一次加载的时候，先取出 default的内容
       if (environment == null) {
         environment = context.getStringAttribute("default");
       }
       for (XNode child : context.getChildren()) {
         String id = child.getStringAttribute("id");
         if (isSpecifiedEnvironment(id)) {
+          // 在 MyBatis 中有两种类型的事务管理器（也就是 type=”[JDBC|MANAGED]”）：
+          // JDBC – 这个配置就是直接使用了 JDBC 的提交和回滚设置，它依赖于从数据源得到的连接来管理事务作用域。
           TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
+          // PooledDataSourceFactory
           DataSourceFactory dsFactory = dataSourceElement(child.evalNode("dataSource"));
+          // PooledDataSource
           DataSource dataSource = dsFactory.getDataSource();
           Environment.Builder environmentBuilder = new Environment.Builder(id)
               .transactionFactory(txFactory)
@@ -311,6 +368,7 @@ public class XMLConfigBuilder extends BaseBuilder {
   private TransactionFactory transactionManagerElement(XNode context) throws Exception {
     if (context != null) {
       String type = context.getStringAttribute("type");
+      // 还可以传参数进去？
       Properties props = context.getChildrenAsProperties();
       TransactionFactory factory = (TransactionFactory) resolveClass(type).newInstance();
       factory.setProperties(props);
@@ -321,6 +379,7 @@ public class XMLConfigBuilder extends BaseBuilder {
 
   private DataSourceFactory dataSourceElement(XNode context) throws Exception {
     if (context != null) {
+      // 数据源类型
       String type = context.getStringAttribute("type");
       Properties props = context.getChildrenAsProperties();
       DataSourceFactory factory = (DataSourceFactory) resolveClass(type).newInstance();
@@ -330,6 +389,11 @@ public class XMLConfigBuilder extends BaseBuilder {
     throw new BuilderException("Environment declaration requires a DataSourceFactory.");
   }
 
+  /**
+   * 也就是数据库类型到 java类型的转换
+   * 无论是 MyBatis 在预处理语句（PreparedStatement）中设置一个参数时，还是从结果集中取出一个值时， 都会用类型处理器将获取的值以合适的方式转换成 Java 类型。
+   * @param parent
+   */
   private void typeHandlerElement(XNode parent) {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
@@ -360,6 +424,7 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void mapperElement(XNode parent) throws Exception {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
+        // 如果是直接给定一个包名，那么代表 全是mapper，没有xml
         if ("package".equals(child.getName())) {
           String mapperPackage = child.getStringAttribute("name");
           configuration.addMappers(mapperPackage);
@@ -367,17 +432,24 @@ public class XMLConfigBuilder extends BaseBuilder {
           String resource = child.getStringAttribute("resource");
           String url = child.getStringAttribute("url");
           String mapperClass = child.getStringAttribute("class");
+          // resource  xml
           if (resource != null && url == null && mapperClass == null) {
+            // todo  以后探讨下这是撒
             ErrorContext.instance().resource(resource);
+            // input 流
             InputStream inputStream = Resources.getResourceAsStream(resource);
+            //  建造者模式
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource, configuration.getSqlFragments());
+            // 解析， 重头戏
             mapperParser.parse();
           } else if (resource == null && url != null && mapperClass == null) {
+            // url
             ErrorContext.instance().resource(url);
             InputStream inputStream = Resources.getUrlAsStream(url);
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, url, configuration.getSqlFragments());
             mapperParser.parse();
           } else if (resource == null && url == null && mapperClass != null) {
+            // mapper
             Class<?> mapperInterface = Resources.classForName(mapperClass);
             configuration.addMapper(mapperInterface);
           } else {

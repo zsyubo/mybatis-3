@@ -42,6 +42,7 @@ public class PooledDataSource implements DataSource {
 
   private final PoolState state = new PoolState(this);
 
+
   private final UnpooledDataSource dataSource;
 
   // OPTIONAL CONFIGURATION FIELDS
@@ -57,6 +58,7 @@ public class PooledDataSource implements DataSource {
   private int expectedConnectionTypeCode;
 
   public PooledDataSource() {
+    // 这儿使用 UnpooledDataSource 是复用了一些属性。
     dataSource = new UnpooledDataSource();
   }
 
@@ -151,7 +153,7 @@ public class PooledDataSource implements DataSource {
 
   /**
    * Sets the default network timeout value to wait for the database operation to complete. See {@link Connection#setNetworkTimeout(java.util.concurrent.Executor, int)}
-   * 
+   *
    * @param milliseconds
    *          The time in milliseconds to wait for the database operation to complete.
    * @since 3.5.2

@@ -217,8 +217,10 @@ public class ResolverUtil<T> {
     String path = getPackagePath(packageName);
 
     try {
+      // 这个是扫描包路径下的包名+类名
       List<String> children = VFS.getInstance().list(path);
       for (String child : children) {
+        // 这里需要判断是否是class文件，因为 list中还有包路径。
         if (child.endsWith(".class")) {
           addIfMatching(test, child);
         }

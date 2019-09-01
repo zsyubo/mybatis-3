@@ -90,6 +90,7 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   public void parse() {
+    // 判断是否已经加载过此文件
     if (!configuration.isResourceLoaded(resource)) {
       configurationElement(parser.evalNode("/mapper"));
       configuration.addLoadedResource(resource);
@@ -107,12 +108,16 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private void configurationElement(XNode context) {
     try {
+      // 获取xml中的命名空间
       String namespace = context.getStringAttribute("namespace");
       if (namespace == null || namespace.equals("")) {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
+      // 记录当前命名空间？  通过后面的带啊，感觉其实类似于ThreadLocal
       builderAssistant.setCurrentNamespace(namespace);
+      // 多个命名空间的情况下，使用 cache-ref 元素来引用另一个缓存
       cacheRefElement(context.evalNode("cache-ref"));
+      // 自定义缓存
       cacheElement(context.evalNode("cache"));
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
       resultMapElements(context.evalNodes("/mapper/resultMap"));
@@ -188,11 +193,14 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private void cacheRefElement(XNode context) {
     if (context != null) {
+      // 当前命名空间 ，引用的命名空间。
       configuration.addCacheRef(builderAssistant.getCurrentNamespace(), context.getStringAttribute("namespace"));
       CacheRefResolver cacheRefResolver = new CacheRefResolver(builderAssistant, context.getStringAttribute("namespace"));
       try {
+        // 这里面返回了一个Cache，但是有撒用了？ 这而只是做一个判断，判断所引用的 cahce是否加载了
         cacheRefResolver.resolveCacheRef();
       } catch (IncompleteElementException e) {
+        //  如果没加载放入这个 Cache中，稍后在做加载。
         configuration.addIncompleteCacheRef(cacheRefResolver);
       }
     }

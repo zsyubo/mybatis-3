@@ -44,8 +44,11 @@ public class XMLIncludeTransformer {
   }
 
   public void applyIncludes(Node source) {
+    // 参数上下文
     Properties variablesContext = new Properties();
+    //  配置文件中的自定义属性参数
     Properties configurationVariables = configuration.getVariables();
+    // j8风格  合并
     Optional.ofNullable(configurationVariables).ifPresent(variablesContext::putAll);
     applyIncludes(source, variablesContext, false);
   }
@@ -56,7 +59,9 @@ public class XMLIncludeTransformer {
    * @param variablesContext Current context for static variables with values
    */
   private void applyIncludes(Node source, final Properties variablesContext, boolean included) {
+    // included == false
     if (source.getNodeName().equals("include")) {
+      // 引用
       Node toInclude = findSqlFragment(getStringAttribute(source, "refid"), variablesContext);
       Properties toIncludeContext = getVariablesContext(source, variablesContext);
       applyIncludes(toInclude, toIncludeContext, true);
@@ -92,6 +97,7 @@ public class XMLIncludeTransformer {
     refid = PropertyParser.parse(refid, variables);
     refid = builderAssistant.applyCurrentNamespace(refid, true);
     try {
+      // 去sql中寻找这个sql片段
       XNode nodeToInclude = configuration.getSqlFragments().get(refid);
       return nodeToInclude.getNode().cloneNode(true);
     } catch (IllegalArgumentException e) {

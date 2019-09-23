@@ -27,7 +27,7 @@
     <property name="url" value="jdbc:mysql://10.211.55.3:3306/imooc_miaosha?useUnicode=true"/>
   </properties>
   <settings>
-    <setting name="logImpl" value="LOG4J"/>
+    <setting name="logImpl" value="STDOUT_LOGGING"/>
   </settings>
   <typeAliases>
     <package name="org.apache.ibatis.helloworld.pojo"/>
@@ -44,6 +44,7 @@
     </environment>
   </environments>
   <mappers>
-    <mapper resource="org/apache/ibatis/helloworld/mapper/UserDOMapper.xml"/>
+    <mapper resource="org/apache/ibatis/helloworld/dao/mapper/UserDOMapper.xml"/>
+<!--    <package name="org.apache.ibatis.helloworld.dao"/>-->
   </mappers>
 </configuration>

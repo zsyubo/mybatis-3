@@ -46,6 +46,13 @@ public class XMLStatementBuilder extends BaseBuilder {
     this(configuration, builderAssistant, context, null);
   }
 
+  /**
+   *  其实这儿并没有用构建者模式
+   * @param configuration  全部配置信息
+   * @param builderAssistant   上下文信息，其实有一个项目，这玩意直接放到ThreadLocal
+   * @param context   select|insert|update|delete node节点
+   * @param databaseId  数据库id
+   */
   public XMLStatementBuilder(Configuration configuration, MapperBuilderAssistant builderAssistant, XNode context, String databaseId) {
     super(configuration);
     this.builderAssistant = builderAssistant;
@@ -57,28 +64,37 @@ public class XMLStatementBuilder extends BaseBuilder {
     String id = context.getStringAttribute("id");
     String databaseId = context.getStringAttribute("databaseId");
 
+    //也就是可以拓展 databaseId来支持多种数据库的sql，特别是做产品的时候。
     if (!databaseIdMatchesCurrent(id, databaseId, this.requiredDatabaseId)) {
       return;
     }
-
+    // 获取当前node name
     String nodeName = context.getNode().getNodeName();
     SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
+    // 是否是select
     boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
+    // 将其设置为 true 后，只要语句被调用，都会导致本地缓存和二级缓存被清空，默认值：false。
     boolean flushCache = context.getBooleanAttribute("flushCache", !isSelect);
+    // 	将其设置为 true 后，将会导致本条语句的结果被二级缓存缓存起来，默认值：对 select 元素为 true。
     boolean useCache = context.getBooleanAttribute("useCache", isSelect);
+//    这个设置仅针对嵌套结果 select 语句适用：如果为 true，就是假设包含了嵌套结果集或是分组，这样的话当返回一个主结果行的时候，就不会发生有对前面结果集的引用的情况。
+//    这就使得在获取嵌套的结果集的时候不至于导致内存不够用。默认值：false。
     boolean resultOrdered = context.getBooleanAttribute("resultOrdered", false);
 
     // Include Fragments before parsing
     XMLIncludeTransformer includeParser = new XMLIncludeTransformer(configuration, builderAssistant);
     includeParser.applyIncludes(context.getNode());
-
+    // 属性传值用，可以传入对象
     String parameterType = context.getStringAttribute("parameterType");
+    // 加载参数类
     Class<?> parameterTypeClass = resolveClass(parameterType);
 
+    // todo MyBatis 从 3.2 开始支持可插拔脚本语言，这允许你插入一种脚本语言驱动，并基于这种语言来编写动态 SQL 查询语句。 没了解过
     String lang = context.getStringAttribute("lang");
     LanguageDriver langDriver = getLanguageDriver(lang);
 
     // Parse selectKey after includes and remove them.
+    // 在包含后解析selectKey并将其删除。   这个主要是用来做主键生产的，官方并不推荐
     processSelectKeyNodes(id, parameterTypeClass, langDriver);
 
     // Parse the SQL (pre: <selectKey> and <include> were parsed and removed)
@@ -88,6 +104,8 @@ public class XMLStatementBuilder extends BaseBuilder {
     if (configuration.hasKeyGenerator(keyStatementId)) {
       keyGenerator = configuration.getKeyGenerator(keyStatementId);
     } else {
+//      （仅对 insert 和 update 有用）这会令 MyBatis 使用 JDBC 的 getGeneratedKeys
+//      方法来取出由数据库内部生成的主键（比如：像 MySQL 和 SQL Server 这样的关系数据库管理系统的自动递增字段），默认值：false。
       keyGenerator = context.getBooleanAttribute("useGeneratedKeys",
           configuration.isUseGeneratedKeys() && SqlCommandType.INSERT.equals(sqlCommandType))
           ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
@@ -110,6 +128,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     String keyColumn = context.getStringAttribute("keyColumn");
     String resultSets = context.getStringAttribute("resultSets");
 
+    // 构造
     builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,
         fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,
         resultSetTypeEnum, flushCache, useCache, resultOrdered,

@@ -47,6 +47,7 @@ public class MapperRegistry {
       throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
     }
     try {
+      //  jdk 动态代理
       return mapperProxyFactory.newInstance(sqlSession);
     } catch (Exception e) {
       throw new BindingException("Error getting mapper instance. Cause: " + e, e);
@@ -73,11 +74,13 @@ public class MapperRegistry {
         //在运行解析器之前添加类型非常重要
         //否则可能会自动尝试绑定
         // mapper解析器 如果类型已知，则不会尝试。
-        // todo 待解析
+        // todo 待解析  mapper注解解析构建器？
         MapperAnnotationBuilder parser = new MapperAnnotationBuilder(config, type);
+        // 解析
         parser.parse();
         loadCompleted = true;
       } finally {
+        // 解析失败，释放此mapper
         if (!loadCompleted) {
           knownMappers.remove(type);
         }

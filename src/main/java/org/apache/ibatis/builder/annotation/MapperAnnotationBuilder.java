@@ -118,19 +118,27 @@ public class MapperAnnotationBuilder {
 
   public MapperAnnotationBuilder(Configuration configuration, Class<?> type) {
     String resource = type.getName().replace('.', '/') + ".java (best guess)";
+    // todo MapperBuilderAssistant这个是干嘛的？
     this.assistant = new MapperBuilderAssistant(configuration, resource);
     this.configuration = configuration;
     this.type = type;
   }
 
   public void parse() {
+
     String resource = type.toString();
+    // 是否已经解析
     if (!configuration.isResourceLoaded(resource)) {
+      // 获取xml资源？默认是寻找mapper同级目录下的xml文件。
+      // 个人感觉这的xml可用可不用，因为即使xml无法加载还是能正常使用。
       loadXmlResource();
+      // 标记此资源已解析
       configuration.addLoadedResource(resource);
+      // 设置为当前命名空间
       assistant.setCurrentNamespace(type.getName());
       parseCache();
       parseCacheRef();
+      // 获取方法列表
       Method[] methods = type.getMethods();
       for (Method method : methods) {
         try {
@@ -168,6 +176,7 @@ public class MapperAnnotationBuilder {
     if (!configuration.isResourceLoaded("namespace:" + type.getName())) {
       String xmlResource = type.getName().replace('.', '/') + ".xml";
       // #1347
+      //  默认寻找的xml 配置目录：org/apache/ibatis/helloworld/dao/UserDOMapper.xml
       InputStream inputStream = type.getResourceAsStream("/" + xmlResource);
       if (inputStream == null) {
         // Search XML mapper that is not in the module but in the classpath.
@@ -178,6 +187,7 @@ public class MapperAnnotationBuilder {
         }
       }
       if (inputStream != null) {
+        // 如果找到了，就解析XML文件
         XMLMapperBuilder xmlParser = new XMLMapperBuilder(inputStream, assistant.getConfiguration(), xmlResource, configuration.getSqlFragments(), type.getName());
         xmlParser.parse();
       }

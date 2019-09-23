@@ -15,7 +15,10 @@
  */
 package org.apache.ibatis.helloworld;
 
+import org.apache.ibatis.helloworld.dao.UserDOMapper;
+import org.apache.ibatis.helloworld.pojo.UserDO;
 import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.junit.Test;
@@ -27,8 +30,25 @@ public class MainTest {
 
   @Test
   public void mianTest() throws IOException {
+    // 保存生成的代理类的字节码文件
+//    System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
+
     String resource = "mybatis-config.xml";
     InputStream inputStream = Resources.getResourceAsStream(resource);
     SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+    try (SqlSession session = sqlSessionFactory.openSession()) {
+      UserDOMapper mapper = session.getMapper(UserDOMapper.class);
+      UserDO blog = mapper.selectByTelphone("13521234859");
+      System.out.println(blog.toString());
+      System.out.println("------");
+      UserDO blog2 = mapper.selectByTelphone("13521234859");
+      System.out.println(blog2.toString());
+    }
+    System.out.println("------");
+    try (SqlSession session = sqlSessionFactory.openSession()) {
+      UserDOMapper mapper = session.getMapper(UserDOMapper.class);
+      UserDO blog = mapper.selectByTelphone("13521234859");
+      System.out.println(blog.toString());
+    }
   }
 }

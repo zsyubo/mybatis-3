@@ -41,6 +41,10 @@ public class CachingExecutor implements Executor {
   private final Executor delegate;
   private final TransactionalCacheManager tcm = new TransactionalCacheManager();
 
+  /**
+   *
+   * @param delegate   CachingExecutor
+   */
   public CachingExecutor(Executor delegate) {
     this.delegate = delegate;
     delegate.setExecutorWrapper(this);

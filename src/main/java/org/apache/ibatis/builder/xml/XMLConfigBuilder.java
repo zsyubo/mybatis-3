@@ -91,7 +91,7 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   public Configuration parse() {
-    // 防止二次加载？
+    // 防止二次加载？org.apache.ibatis.builder.xml.XMLConfigBuilder.XMLConfigBuilder(org.apache.ibatis.parsing.XPathParser, java.lang.String, java.util.Properties)
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
@@ -137,6 +137,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
       // 类型处理器（typeHandlers）
       typeHandlerElement(root.evalNode("typeHandlers"));
+      //  mapper 处理
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
@@ -438,7 +439,7 @@ public class XMLConfigBuilder extends BaseBuilder {
             ErrorContext.instance().resource(resource);
             // input 流
             InputStream inputStream = Resources.getResourceAsStream(resource);
-            //  建造者模式
+            //  建造者模式构建解析器
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource, configuration.getSqlFragments());
             // 解析， 重头戏
             mapperParser.parse();

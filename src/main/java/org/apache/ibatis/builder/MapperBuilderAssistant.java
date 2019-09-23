@@ -50,6 +50,7 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
 /**
+ *  感觉这个就是加载上下文
  * @author Clinton Begin
  */
 public class MapperBuilderAssistant extends BaseBuilder {
@@ -128,7 +129,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
       boolean readWrite,
       boolean blocking,
       Properties props) {
+    // 已当前命名空间为id，也就是一个  一个命名空间一个cache
     Cache cache = new CacheBuilder(currentNamespace)
+      // todo
         .implementation(valueOrDefault(typeClass, PerpetualCache.class))
         .addDecorator(valueOrDefault(evictionClass, LruCache.class))
         .clearInterval(flushInterval)
@@ -136,7 +139,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
         .readWrite(readWrite)
         .blocking(blocking)
         .properties(props)
+      // 构建的核心逻辑
         .build();
+    //
     configuration.addCache(cache);
     currentCache = cache;
     return cache;
@@ -182,7 +187,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
       Boolean autoMapping) {
     id = applyCurrentNamespace(id, false);
     extend = applyCurrentNamespace(extend, true);
-
+    // 处理 继承的情况？
     if (extend != null) {
       if (!configuration.hasResultMap(extend)) {
         throw new IncompleteElementException("Could not find a parent resultmap with id '" + extend + "'");
@@ -206,6 +211,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     ResultMap resultMap = new ResultMap.Builder(configuration, id, type, resultMappings, autoMapping)
         .discriminator(discriminator)
         .build();
+    // md。。居然在这添加的。。。。。 那为什么还要返回？
     configuration.addResultMap(resultMap);
     return resultMap;
   }
@@ -266,7 +272,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     if (unresolvedCacheRef) {
       throw new IncompleteElementException("Cache-ref not yet resolved");
     }
-
+    // 获取全名称
     id = applyCurrentNamespace(id, false);
     boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
 
@@ -302,6 +308,13 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return value == null ? defaultValue : value;
   }
 
+  /**
+   *
+   * @param parameterMapName
+   * @param parameterTypeClass
+   * @param statementId   namespace+标签id
+   * @return
+   */
   private ParameterMap getStatementParameterMap(
       String parameterMapName,
       Class<?> parameterTypeClass,

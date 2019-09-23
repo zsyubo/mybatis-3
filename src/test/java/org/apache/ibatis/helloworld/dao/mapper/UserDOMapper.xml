@@ -18,7 +18,7 @@
 -->
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.apache.ibatis.helloworld.dao.UserDOMapper">
-    <cache-ref namespace="com.someone.application.data.SomeMapper"/>
+<!--    <cache-ref namespace="com.someone.application.data.SomeMapper"/>-->
     <resultMap id="BaseResultMap" type="org.apache.ibatis.helloworld.pojo.UserDO">
         <!--
           WARNING - @mbg.generated
@@ -41,5 +41,11 @@
         -->
         id, name, gender, age, telphone, register_mode, third_party_id
     </sql>
+
+  <select id="selectByPhone" resultMap="BaseResultMap">
+        select
+         <include refid="Base_Column_List" />
+         from user_info where telphone = #{telphone}
+  </select>
 
 </mapper>

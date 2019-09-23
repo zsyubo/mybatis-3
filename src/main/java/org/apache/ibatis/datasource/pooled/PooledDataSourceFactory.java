@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2015 the original author or authors.
+ *    Copyright 2009-2019 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.apache.ibatis.datasource.unpooled.UnpooledDataSourceFactory;
  */
 public class PooledDataSourceFactory extends UnpooledDataSourceFactory {
 
+  // 这里是复用了。因为带有连接池功能的只是对原有的一个拓展，很多属性其实通用。
   public PooledDataSourceFactory() {
     this.dataSource = new PooledDataSource();
   }

@@ -160,11 +160,13 @@ public class Configuration {
 
   // 缓存集合
   protected final Map<String, Cache> caches = new StrictMap<>("Caches collection");
+  // resultMaps
   protected final Map<String, ResultMap> resultMaps = new StrictMap<>("Result Maps collection");
   protected final Map<String, ParameterMap> parameterMaps = new StrictMap<>("Parameter Maps collection");
   protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<>("Key Generators collection");
 
   protected final Set<String> loadedResources = new HashSet<>();
+  // 加载的sql标签
   protected final Map<String, XNode> sqlFragments = new StrictMap<>("XML fragments parsed from previous mappers");
 
   protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<>();
@@ -606,8 +608,11 @@ public class Configuration {
   }
 
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
+
+    // ??
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
+    // 默认是 simple
     Executor executor;
     if (ExecutorType.BATCH == executorType) {
       executor = new BatchExecutor(this, transaction);
@@ -616,9 +621,11 @@ public class Configuration {
     } else {
       executor = new SimpleExecutor(this, transaction);
     }
+    // 一级缓存，默认开启
     if (cacheEnabled) {
       executor = new CachingExecutor(executor);
     }
+    // 插件
     executor = (Executor) interceptorChain.pluginAll(executor);
     return executor;
   }
@@ -664,6 +671,7 @@ public class Configuration {
   }
 
   public void addResultMap(ResultMap rm) {
+    //  mapper全路径+id org.apache.ibatis.helloworld.dao.UserDOMapper.BaseResultMap
     resultMaps.put(rm.getId(), rm);
     checkLocallyForDiscriminatedNestedResultMaps(rm);
     checkGloballyForDiscriminatedNestedResultMaps(rm);

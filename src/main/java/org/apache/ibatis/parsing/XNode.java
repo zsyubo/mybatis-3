@@ -213,6 +213,12 @@ public class XNode {
     return getStringAttribute(name, null);
   }
 
+  /**
+   * 如果name的参数为空，则返回 def
+   * @param name
+   * @param def
+   * @return
+   */
   public String getStringAttribute(String name, String def) {
     String value = attributes.getProperty(name);
     if (value == null) {

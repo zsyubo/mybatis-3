@@ -26,6 +26,7 @@ import org.apache.ibatis.reflection.ExceptionUtil;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ * 动态代理对象
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -45,6 +46,8 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
+      // method.getDeclaringClass()  返回表示声明由此Method对象表示的方法的类的Class对象。
+      //  如果是Object中定义的方法，直接执行。如toString(),hashCode()等
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, args);
       } else if (method.isDefault()) {
@@ -53,6 +56,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     } catch (Throwable t) {
       throw ExceptionUtil.unwrapThrowable(t);
     }
+    //其他Mapper接口定义的方法交由mapperMethod来执行
     final MapperMethod mapperMethod = cachedMapperMethod(method);
     return mapperMethod.execute(sqlSession, args);
   }

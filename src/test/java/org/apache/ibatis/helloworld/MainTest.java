@@ -37,6 +37,7 @@ public class MainTest {
     InputStream inputStream = Resources.getResourceAsStream(resource);
     // DefaultSqlSessionFactory
     SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+    // DefaultSqlSession
     try (SqlSession session = sqlSessionFactory.openSession()) {
       UserDOMapper mapper = session.getMapper(UserDOMapper.class);
       UserDO blog = mapper.selectByTelphone("13521234859");
@@ -44,6 +45,8 @@ public class MainTest {
       System.out.println("------");
       UserDO blog2 = mapper.selectByTelphone("13521234859");
       System.out.println(blog2.toString());
+//      try with resource 会自动去释放资源
+//      session.close();
     }
     System.out.println("------");
     try (SqlSession session = sqlSessionFactory.openSession()) {

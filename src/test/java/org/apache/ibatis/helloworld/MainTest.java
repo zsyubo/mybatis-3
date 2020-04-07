@@ -35,6 +35,7 @@ public class MainTest {
 
     String resource = "mybatis-config.xml";
     InputStream inputStream = Resources.getResourceAsStream(resource);
+    // DefaultSqlSessionFactory
     SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
     try (SqlSession session = sqlSessionFactory.openSession()) {
       UserDOMapper mapper = session.getMapper(UserDOMapper.class);

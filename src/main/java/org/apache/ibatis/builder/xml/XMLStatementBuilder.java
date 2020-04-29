@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
+ *    Copyright 2009-2020 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -60,14 +60,18 @@ public class XMLStatementBuilder extends BaseBuilder {
     this.requiredDatabaseId = databaseId;
   }
 
+  /**
+   * 主要是读取 标签的配置
+   */
   public void parseStatementNode() {
     String id = context.getStringAttribute("id");
     String databaseId = context.getStringAttribute("databaseId");
 
-    //也就是可以拓展 databaseId来支持多种数据库的sql，特别是做产品的时候。
+    //也就是可以拓展 databaseId来支持多种数据库的sql，因为有些sql是特定数据库的
     if (!databaseIdMatchesCurrent(id, databaseId, this.requiredDatabaseId)) {
       return;
     }
+    /**1. 获取标签参数和sql类型**/
     // 获取当前node name
     String nodeName = context.getNode().getNodeName();
     SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
@@ -84,6 +88,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     // Include Fragments before parsing
     XMLIncludeTransformer includeParser = new XMLIncludeTransformer(configuration, builderAssistant);
     includeParser.applyIncludes(context.getNode());
+    /** 获取传入对象类型**/
     // 属性传值用，可以传入对象
     String parameterType = context.getStringAttribute("parameterType");
     // 加载参数类
@@ -91,8 +96,11 @@ public class XMLStatementBuilder extends BaseBuilder {
 
     // todo MyBatis 从 3.2 开始支持可插拔脚本语言，这允许你插入一种脚本语言驱动，并基于这种语言来编写动态 SQL 查询语句。 没了解过
     String lang = context.getStringAttribute("lang");
+    // 默认为XMLLanguageDriver.class
     LanguageDriver langDriver = getLanguageDriver(lang);
 
+
+    /** selectKey **/
     // Parse selectKey after includes and remove them.
     // 在包含后解析selectKey并将其删除。   这个主要是用来做主键生产的，官方并不推荐
     processSelectKeyNodes(id, parameterTypeClass, langDriver);
@@ -104,13 +112,13 @@ public class XMLStatementBuilder extends BaseBuilder {
     if (configuration.hasKeyGenerator(keyStatementId)) {
       keyGenerator = configuration.getKeyGenerator(keyStatementId);
     } else {
-//      （仅对 insert 和 update 有用）这会令 MyBatis 使用 JDBC 的 getGeneratedKeys
+//      （仅对 insert ）这会令 MyBatis 使用 JDBC 的 getGeneratedKeys
 //      方法来取出由数据库内部生成的主键（比如：像 MySQL 和 SQL Server 这样的关系数据库管理系统的自动递增字段），默认值：false。
       keyGenerator = context.getBooleanAttribute("useGeneratedKeys",
           configuration.isUseGeneratedKeys() && SqlCommandType.INSERT.equals(sqlCommandType))
           ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
     }
-
+    // 创建 SqlSource 对象  主要是进行一些Sql处理，叫static Sql source(预处理)，这样更快。
     SqlSource sqlSource = langDriver.createSqlSource(configuration, context, parameterTypeClass);
     StatementType statementType = StatementType.valueOf(context.getStringAttribute("statementType", StatementType.PREPARED.toString()));
     Integer fetchSize = context.getIntAttribute("fetchSize");

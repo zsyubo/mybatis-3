@@ -21,8 +21,10 @@ import org.apache.ibatis.helloworld.pojo.UserDO;
 
 public interface UserDOMapper {
 
-    @Select("select * from user_info where telphone = #{telphone}")
+    @Select("select * from user where telphone = #{telphone}")
     UserDO selectByTelphone(@Param("telphone") String telphone);
 
   UserDO selectByPhone(@Param("telphone") String telphone);
+
+  UserDO selectByPhoneOrName(@Param("telphone") String telphone,@Param("name") String name);
 }

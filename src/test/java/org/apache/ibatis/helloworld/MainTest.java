@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
+ *    Copyright 2009-2020 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -34,7 +36,9 @@ public class MainTest {
 //    System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
 
     String resource = "mybatis-config.xml";
-    InputStream inputStream = Resources.getResourceAsStream(resource);
+//    InputStream inputStream = Resources.getResourceAsStream(resource);
+    System.out.println(System.getProperty("user.dir"));
+    InputStream inputStream =MainTest.class.getResourceAsStream(resource);
     // DefaultSqlSessionFactory
     SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
     // DefaultSqlSession
@@ -48,11 +52,33 @@ public class MainTest {
 //      try with resource 会自动去释放资源
 //      session.close();
     }
-    System.out.println("------");
+//    System.out.println("------");
+//    try (SqlSession session = sqlSessionFactory.openSession()) {
+//      UserDOMapper mapper = session.getMapper(UserDOMapper.class);
+//      UserDO blog = mapper.selectByTelphone("13521234859");
+//      System.out.println(blog.toString());
+//    }
+  }
+
+
+  @Test
+  public void mianTest2() throws IOException {
+    String resource = "mybatis-config.xml";
+    System.out.println(System.getProperty("user.dir"));
+    InputStream inputStream =MainTest.class.getResourceAsStream(resource);
+    // DefaultSqlSessionFactory
+    SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+    // DefaultSqlSession
     try (SqlSession session = sqlSessionFactory.openSession()) {
       UserDOMapper mapper = session.getMapper(UserDOMapper.class);
-      UserDO blog = mapper.selectByTelphone("13521234859");
+      UserDO blog = mapper.selectByPhoneOrName("13521234859",null);
       System.out.println(blog.toString());
+      System.out.println("------");
+//      UserDO blog2 = mapper.selectByTelphone("13521234859");
+//      System.out.println(blog2.toString());
+//      try with resource 会自动去释放资源
+//      session.close();
     }
+
   }
 }

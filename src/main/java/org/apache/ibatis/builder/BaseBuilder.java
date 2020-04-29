@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
+ *    Copyright 2009-2020 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -35,7 +35,11 @@ public abstract class BaseBuilder {
   //Configuration 是 MyBatis 初始化过程的核心对象， MyBatis 中几乎全部的配置信息会保存到
   //Configuration 对象中 。 Configuration 对象是在 MyBatis 初始化过程中创建且是全局唯一的，
   protected final Configuration configuration;
+
+  // 别名
   protected final TypeAliasRegistry typeAliasRegistry;
+
+  //  类型转换器
   protected final TypeHandlerRegistry typeHandlerRegistry;
 
   public BaseBuilder(Configuration configuration) {

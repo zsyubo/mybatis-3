@@ -21,10 +21,12 @@ import org.apache.ibatis.helloworld.pojo.UserDO;
 
 public interface UserDOMapper {
 
-    @Select("select * from user where telphone = #{telphone}")
-    UserDO selectByTelphone(@Param("telphone") String telphone);
+  @Select("select * from user where telphone = #{telphone}")
+  UserDO selectByTelphone(@Param("telphone") String telphone);
 
   UserDO selectByPhone(@Param("telphone") String telphone);
 
-  UserDO selectByPhoneOrName(@Param("telphone") String telphone,@Param("name") String name);
+  UserDO selectByPhoneAndAge(@Param("telphone") String telphone, @Param("age") int age);
+
+  UserDO selectByPhoneOrName(@Param("telphone") String telphone, @Param("name") String name);
 }

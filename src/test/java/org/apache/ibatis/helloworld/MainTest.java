@@ -17,14 +17,11 @@ package org.apache.ibatis.helloworld;
 
 import org.apache.ibatis.helloworld.dao.UserDOMapper;
 import org.apache.ibatis.helloworld.pojo.UserDO;
-import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -71,7 +68,7 @@ public class MainTest {
     // DefaultSqlSession
     try (SqlSession session = sqlSessionFactory.openSession()) {
       UserDOMapper mapper = session.getMapper(UserDOMapper.class);
-      UserDO blog = mapper.selectByPhoneOrName("13521234859",null);
+      UserDO blog = mapper.selectByPhoneOrName("13521234859", null);
       System.out.println(blog.toString());
       System.out.println("------");
 //      UserDO blog2 = mapper.selectByTelphone("13521234859");
@@ -79,6 +76,15 @@ public class MainTest {
 //      try with resource 会自动去释放资源
 //      session.close();
     }
+  }
 
+  @Test
+  public void ifTest() {
+    int i = 1;
+    if (i == 1) {
+      System.out.printf("cnm");
+    } else if (i < 2) {
+      System.out.println("ass");
+    }
   }
 }

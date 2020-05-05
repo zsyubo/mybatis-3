@@ -19,6 +19,9 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.helloworld.pojo.UserDO;
 
+import java.util.List;
+import java.util.Map;
+
 public interface UserDOMapper {
 
   @Select("select * from user where telphone = #{telphone}")
@@ -26,7 +29,13 @@ public interface UserDOMapper {
 
   UserDO selectByPhone(@Param("telphone") String telphone);
 
+  List<UserDO> selectByPhoneAsList(@Param("telphone") String telphone);
+
   UserDO selectByPhoneAndAge(@Param("telphone") String telphone, @Param("age") int age);
 
   UserDO selectByPhoneOrName(@Param("telphone") String telphone, @Param("name") String name);
+
+  List<Map> selectByPhoneAsMaps(@Param("telphone") String telphone);
+
+  Map selectByPhoneAsMap(@Param("telphone") String telphone);
 }

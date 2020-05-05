@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 public class MainTest {
 
@@ -68,8 +69,10 @@ public class MainTest {
     // DefaultSqlSession
     try (SqlSession session = sqlSessionFactory.openSession()) {
       UserDOMapper mapper = session.getMapper(UserDOMapper.class);
-      UserDO blog = mapper.selectByPhoneOrName("13521234859", null);
-      System.out.println(blog.toString());
+      // org.apache.ibatis.binding.MapperProxy.invoke
+//      UserDO blog = mapper.selectByPhoneOrName("13521234859", null);
+      Map list = mapper.selectByPhoneAsMap("13521234859");
+      System.out.println(list.size());
       System.out.println("------");
 //      UserDO blog2 = mapper.selectByTelphone("13521234859");
 //      System.out.println(blog2.toString());

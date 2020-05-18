@@ -111,7 +111,6 @@ public class MapperBuilderAssistant extends BaseBuilder {
       Properties props) {
     // 已当前命名空间为id，也就是一个  一个命名空间一个cache
     Cache cache = new CacheBuilder(currentNamespace)
-      // todo
         .implementation(valueOrDefault(typeClass, PerpetualCache.class))
         .addDecorator(valueOrDefault(evictionClass, LruCache.class))
         .clearInterval(flushInterval)

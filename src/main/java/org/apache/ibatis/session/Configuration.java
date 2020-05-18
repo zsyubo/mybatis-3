@@ -168,6 +168,7 @@ public class Configuration {
     this.environment = environment;
   }
 
+  // 初始化内置别名
   public Configuration() {
     typeAliasRegistry.registerAlias("JDBC", JdbcTransactionFactory.class);
     typeAliasRegistry.registerAlias("MANAGED", ManagedTransactionFactory.class);

@@ -274,6 +274,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         // 合并
         defaults.putAll(vars);
       }
+      // 上下文变量
       parser.setVariables(defaults);
       //
       configuration.setVariables(defaults);

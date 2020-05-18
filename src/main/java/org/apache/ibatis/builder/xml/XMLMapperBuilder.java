@@ -38,6 +38,7 @@ import java.util.*;
 public class XMLMapperBuilder extends BaseBuilder {
 
   private final XPathParser parser;
+  // 用于缓存、sql参数、查询返回的结果集处理
   private final MapperBuilderAssistant builderAssistant;
   private final Map<String, XNode> sqlFragments;
   private final String resource;

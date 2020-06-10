@@ -48,6 +48,7 @@ public class XMLScriptBuilder extends BaseBuilder {
     super(configuration);
     this.context = context;
     this.parameterType = parameterType;
+    // 解析动态sql标签用
     initNodeHandlerMap();
   }
 
@@ -83,11 +84,13 @@ public class XMLScriptBuilder extends BaseBuilder {
 
   // todo 核心方法
   protected MixedSqlNode parseDynamicTags(XNode node) {
-    // 最终的解析结果
+    // 最终的解析结果（ 是sql 则是TextSqlNode），动态标签是
     List<SqlNode> contents = new ArrayList<>();
+    // 非 node标签 则按照换行符分隔成node
     NodeList children = node.getNode().getChildNodes();
     for (int i = 0; i < children.getLength(); i++) {
       XNode child = node.newXNode(children.item(i));
+      // CDATA(防止一些符号被转义)或者文本节点
       if (child.getNode().getNodeType() == Node.CDATA_SECTION_NODE || child.getNode().getNodeType() == Node.TEXT_NODE) {
         String data = child.getStringBody("");
         TextSqlNode textSqlNode = new TextSqlNode(data);
@@ -103,6 +106,7 @@ public class XMLScriptBuilder extends BaseBuilder {
          **/
 
         String nodeName = child.getNode().getNodeName();
+        // 从标签中获取对应的处理器
         NodeHandler handler = nodeHandlerMap.get(nodeName);
         if (handler == null) {
           throw new BuilderException("Unknown element <" + nodeName + "> in SQL statement.");

@@ -548,6 +548,7 @@ public class Configuration {
    */
   public LanguageDriver getLanguageDriver(Class<? extends LanguageDriver> langClass) {
     if (langClass == null) {
+      // XMLLanguageDriver.class   org.apache.ibatis.session.Configuration.Configuration() 中初始化
       return languageRegistry.getDefaultDriver();
     }
     languageRegistry.register(langClass);

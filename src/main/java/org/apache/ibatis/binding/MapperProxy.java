@@ -50,6 +50,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
       //  如果是Object中定义的方法，直接执行。如toString(),hashCode()等
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, args);
+        // 支持JDK1.8的默认方法
       } else if (method.isDefault()) {
         return invokeDefaultMethod(proxy, method, args);
       }

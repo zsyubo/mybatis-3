@@ -70,17 +70,18 @@ public class XMLScriptBuilder extends BaseBuilder {
      */
     MixedSqlNode rootSqlNode = parseDynamicTags(context);
     SqlSource sqlSource;
-    // 如果  使用得来动态标签，那么为true  比如<if>
+    // 如果  使用得来动态标签，那么为true  比如<if>标签等
     if (isDynamic) {
-      //  // 这里不对 # 进行预解析，因为标签的因素是动态的
+      //   这里不对 # 进行预解析，因为标签的因素是动态的
       sqlSource = new DynamicSqlSource(configuration, rootSqlNode);
     } else {
-      // 主要对 # 进行预解析
+      // 只有只存在 # 的sql才会走此逻辑
       sqlSource = new RawSqlSource(configuration, rootSqlNode, parameterType);
     }
     return sqlSource;
   }
 
+  // todo 核心方法
   protected MixedSqlNode parseDynamicTags(XNode node) {
     // 最终的解析结果
     List<SqlNode> contents = new ArrayList<>();

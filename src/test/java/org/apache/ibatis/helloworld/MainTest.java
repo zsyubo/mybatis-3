@@ -81,6 +81,23 @@ public class MainTest {
     }
   }
 
+
+  @Test
+  public void selectByName() throws IOException {
+    // 保存生成的代理类的字节码文件
+//    System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
+
+    String resource = "mybatis-config.xml";
+    InputStream inputStream = MainTest.class.getResourceAsStream(resource);
+    // DefaultSqlSessionFactory
+    SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+    // DefaultSqlSession
+    try (SqlSession session = sqlSessionFactory.openSession()) {
+      UserDOMapper mapper = session.getMapper(UserDOMapper.class);
+      UserDO blog = mapper.selectByPhoneOrName("13521234859", "2");
+    }
+  }
+
   @Test
   public void ifTest() {
     int i = 1;

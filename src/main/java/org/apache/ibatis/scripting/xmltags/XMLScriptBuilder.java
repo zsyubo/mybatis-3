@@ -94,7 +94,7 @@ public class XMLScriptBuilder extends BaseBuilder {
       if (child.getNode().getNodeType() == Node.CDATA_SECTION_NODE || child.getNode().getNodeType() == Node.TEXT_NODE) {
         String data = child.getStringBody("");
         TextSqlNode textSqlNode = new TextSqlNode(data);
-        // todo  有疑问？ 为什么这儿要加了？
+        // 如果sql中有 $ 那么走此逻辑
         if (textSqlNode.isDynamic()) {
           contents.add(textSqlNode);
           isDynamic = true;

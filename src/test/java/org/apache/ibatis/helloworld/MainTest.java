@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 public class MainTest {
 
@@ -70,9 +69,9 @@ public class MainTest {
     try (SqlSession session = sqlSessionFactory.openSession()) {
       UserDOMapper mapper = session.getMapper(UserDOMapper.class);
       // org.apache.ibatis.binding.MapperProxy.invoke
-//      UserDO blog = mapper.selectByPhoneOrName("13521234859", null);
-      Map list = mapper.selectByPhoneAsMap("13521234859");
-      System.out.println(list.size());
+      UserDO blog = mapper.selectByPhoneOrName("13521234859", null);
+//      Map list = mapper.selectByPhoneAsMap("13521234859");
+//      System.out.println(list.size());
       System.out.println("------");
 //      UserDO blog2 = mapper.selectByTelphone("13521234859");
 //      System.out.println(blog2.toString());
@@ -95,6 +94,22 @@ public class MainTest {
     try (SqlSession session = sqlSessionFactory.openSession()) {
       UserDOMapper mapper = session.getMapper(UserDOMapper.class);
       UserDO blog = mapper.selectByPhoneOrName("13521234859", "2");
+    }
+  }
+
+  @Test
+  public void selectByNameAndAge() throws IOException {
+    // 保存生成的代理类的字节码文件
+//    System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
+
+    String resource = "mybatis-config.xml";
+    InputStream inputStream = MainTest.class.getResourceAsStream(resource);
+    // DefaultSqlSessionFactory
+    SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+    // DefaultSqlSession
+    try (SqlSession session = sqlSessionFactory.openSession()) {
+      UserDOMapper mapper = session.getMapper(UserDOMapper.class);
+      UserDO blog = mapper.selectByPhoneAndAge("13521234859", 2);
     }
   }
 

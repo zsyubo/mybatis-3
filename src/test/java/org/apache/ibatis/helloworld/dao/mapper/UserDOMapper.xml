@@ -35,7 +35,8 @@
   <select id="selectByPhone" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List"/>
-    from user where telphone = #{telphone}
+    from user where
+    telphone = ${telphone}
   </select>
   <select id="selectByPhoneOrName" resultType="org.apache.ibatis.helloworld.pojo.UserDO">
     select
@@ -50,7 +51,7 @@
   <select id="selectByPhoneAndAge" resultType="org.apache.ibatis.helloworld.pojo.UserDO">
     select
     <include refid="Base_Column_List"/>
-    from user where telphone = %{telphone}
+    from user where telphone = ${telphone}
     and age = #{age}
   </select>
 
